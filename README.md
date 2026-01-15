@@ -1,5 +1,6 @@
 
-<img width="1536" height="1024" alt="ChatGPT Image Jan 15, 2026, 04_39_20 PM" src="https://github.com/user-attachments/assets/c9747f8b-c161-4e84-aacc-889826b2e3e8" />
+<img width="1536" height="1024" alt="ChatGPT Image Jan 15, 2026, 04_52_06 PM" src="https://github.com/user-attachments/assets/8b76815e-8cfa-4e94-b9e3-77e64d453403" />
+
 
 # 🛡️ Investigation: PowerShell-Related Alert Validation
 
