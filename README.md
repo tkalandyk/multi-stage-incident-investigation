@@ -1,4 +1,4 @@
-# 🛡️ Incident Investigation: PowerShell-Related Alert Validation
+# 🛡️ Investigation: PowerShell-Related Alert Validation
 
 ## 📌 Overview
 This project documents the investigation of a **high-severity, multi-stage incident** flagged by Microsoft Defender involving suspected PowerShell activity and lateral movement.  
