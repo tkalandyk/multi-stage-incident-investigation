@@ -6,7 +6,8 @@ A high-severity security incident triggered by multiple correlated alerts involv
 
 The incident was escalated due to indicators commonly associated with initial access and potential lateral movement, requiring deeper investigation to determine whether the activity represented a true compromise or legitimate administrative behavior.
 
-![Incident Overview](screenshots/incident-overview.png)
+<img width="1177" height="41" alt="Screenshot 2026-01-15 at 2 23 20 PM" src="https://github.com/user-attachments/assets/c389a2db-86c3-4401-a9c3-eb91019ff64e" />
+
 
 ---
 
