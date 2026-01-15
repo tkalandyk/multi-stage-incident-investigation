@@ -1,128 +1,111 @@
-# 🛡️ Multi-Stage Incident Investigation (SOC Tier 2)
+# 🛡️ Incident Investigation: PowerShell-Related Alert Validation
 
-## 📌 Incident Overview
-
-A high-severity security incident triggered by multiple correlated alerts involving authentication anomalies and privileged PowerShell execution within an Azure-hosted Windows virtual machine.  
-
-The incident was escalated due to indicators commonly associated with initial access and potential lateral movement, requiring deeper investigation to determine whether the activity represented a true compromise or legitimate administrative behavior.
+## 📌 Overview
+This project documents the investigation of a **high-severity, multi-stage incident** flagged by Microsoft Defender involving suspected PowerShell activity and lateral movement.  
+The goal was to validate the alert, identify affected assets, and determine whether the activity represented a real security threat or a benign administrative action.
 
 ---
 
-<img width="1542" height="859" alt="Screenshot 2026-01-15 at 2 20 48 PM" src="https://github.com/user-attachments/assets/a7c38377-6bd6-43b5-84b1-6c5580ce2463" />
+## 🚨 Incident Details
+- **Incident ID:** 22987
+- **Severity:** High
+- **Category:** Initial Access, Execution, Lateral Movement
+- **Status at Time of Review:** Active
+- **Detection Source:** Microsoft Defender for Endpoint
 
+---
+
+## 🖥️ Affected Asset
+- **Device Name:** `sandboxvm`
+- **Environment:** Azure-hosted virtual machine
+- **User Context Observed:** SYSTEM / local administrative processes
+- **Alert Timestamp Reviewed:** January 14, 2026 (15:25–15:50 UTC)
+---
+
+
+<img width="1542" height="859" alt="Screenshot 2026-01-15 at 2 20 48 PM" src="https://github.com/user-attachments/assets/f968cedc-5d25-4bc9-95f4-d4ec9bad1639" />
 
 
 ---
 
-## 🧭 Investigation Scope
+## 🔍 Investigation Methodology
 
-- **Incident ID:** 22987  
-- **Severity:** High  
-- **Time Range Investigated:** January 14–15, 2026  
-- **Environment:** Azure Windows VM (cloud lab)  
-- **Tools Used:**  
-  - Microsoft Defender for Endpoint  
-  - Azure Activity Logs (Log Analytics)
+### Data Source
+- **Log Table:** `DeviceProcessEvents`
+- **Purpose:** Identify process execution during the alert window and validate presence of suspicious tooling.
+
+### Scope Applied
+- Single affected endpoint (`sandboxvm`)
+- Narrow time window aligned to alert generation
+- Focus on execution context and parent-child process relationships
+---
+
+<img width="1562" height="321" alt="image" src="https://github.com/user-attachments/assets/ac4c701d-ed4f-4d0e-9583-deb857bcd9a5" />
+
 
 ---
 
-## 🔎 Alert Prioritization
+## 📊 Key Findings
 
-The incident contained hundreds of alerts across multiple categories.  
-Rather than reviewing each alert individually, the investigation focused on high-signal indicators most likely to represent attacker behavior:
+- No direct execution of:
+  - `powershell.exe`
+  - `pwsh.exe`
+  - `cmd.exe`
 
-- Privileged PowerShell execution  
-- Unusual failed sign-in attempts  
-- File-based security test detection (EICAR)
+- Observed process activity included:
+  - `svchost.exe`
+  - `rundll32.exe`
+  - `backgroundTaskHost.exe`
+  - `RuntimeBroker.exe`
 
-These alerts were prioritized because they represented different stages of a potential attack chain, including access pressure, execution, and confirmation behavior.
-
----
-
-## ⚙️ Execution Analysis (PowerShell Activity)
-
-Analysis of the PowerShell alert revealed that execution was initiated by:
-
-- **Process:** `RunCommandExtension.exe`  
-- **User Context:** `NT AUTHORITY\SYSTEM`
-
-Key findings:
-- PowerShell was **not launched by an interactive user**
-- Execution originated from an **Azure VM extension**
-- Commands ran with **SYSTEM-level privileges**
-
-This confirmed that the activity was initiated through Azure management tooling rather than direct user access such as RDP.
-
-![PowerShell Execution](screenshots/powershell-runcommand.png)
+- All activity executed under **SYSTEM-level context**
+- No evidence of interactive or attacker-driven command execution
 
 ---
 
-## ☁️ Cloud Control-Plane Correlation
+## 🧠 Analysis & Interpretation
 
-To identify the origin of the execution, Azure Activity Logs were reviewed for Microsoft.Compute operations targeting the affected virtual machine.
+Although the alert referenced PowerShell-related behavior, endpoint telemetry showed **no direct invocation of PowerShell binaries** during the relevant timeframe.
 
-Findings included:
-- Compute-related activity within the same timeframe as the PowerShell execution
-- Behavior consistent with **Azure-initiated administrative actions**
-- No direct one-to-one mapping between endpoint telemetry and a single AzureActivity event
+The observed activity is consistent with:
+- Automated system tasks
+- Administrative or orchestration-driven actions
+- Cloud or extension-based operations
 
-Correlation was established using timing, resource scope, and execution context, which is expected in cloud environments where control-plane and endpoint telemetry are decoupled.
-
-![Azure Activity Logs](screenshots/azure-activity.png)
+There was **no evidence of hands-on-keyboard attacker behavior**, credential abuse, or malicious payload execution.
 
 ---
 
-## 🧠 Analyst Assessment
+## ✅ Incident Disposition
 
-Based on the available evidence, the activity was assessed as **administrative rather than malicious**.
+- **Classification:** Likely Administrative / Benign Activity
+- **Risk Level After Validation:** Low
+- **Action Taken:** Documented and monitored
+- **Outcome:** No containment or remediation required
 
-Supporting factors:
-- Execution originated from Azure management-plane tooling  
-- No persistence mechanisms were identified  
-- No malicious payloads or attacker tooling were observed  
-- No confirmed lateral movement occurred  
-- No follow-on suspicious activity was detected  
-
-While the behavior triggered valid security alerts due to its elevated privileges and execution method, there was insufficient evidence to confirm a security breach.
+This investigation demonstrates the importance of validating alert context and behavior rather than relying solely on alert titles or severity labels.
 
 ---
 
-## 🏷️ Final Classification
-
-**Suspicious administrative activity — no confirmed compromise**
-
-The alerts warranted investigation, but the evidence supported expected administrative behavior within a cloud lab environment.
-
----
-
-## 📈 Key Lessons Learned
-
-- Elevated administrative actions can closely resemble attacker tradecraft  
-- Cloud investigations require correlating control-plane and endpoint telemetry  
-- Not all high-severity alerts result in confirmed incidents  
-- Knowing when to close an investigation is a critical SOC analyst skill  
+## 🎯 Skills Demonstrated
+- Alert triage and validation
+- Endpoint process analysis
+- Log scoping and noise reduction
+- False positive identification
+- Clear technical documentation
 
 ---
 
-## 🔧 Recommendations
+## 🧭 MITRE ATT&CK Context
 
-- Improve correlation between Azure control-plane logs and endpoint telemetry  
-- Ensure Azure Activity Logs are consistently ingested and retained  
-- Reduce alert noise for known administrative workflows where appropriate  
+Although the investigation did not confirm malicious activity, the observed behavior aligned with known adversary techniques in the MITRE ATT&CK framework.
 
----
+- **T1059 – Command and Scripting Interpreter**  
+  PowerShell-related behavior was detected through system-level processes. While no direct execution of `powershell.exe` was observed, the alert was triggered by behavior commonly associated with scripted command execution.
 
-## 🧩 Framework Reference
+- **T1021 – Remote Services**  
+  Activity patterns were consistent with remote administrative execution mechanisms. Investigation confirmed the activity originated from legitimate administrative or automated processes rather than an external threat actor.
 
-This investigation aligns with the following MITRE ATT&CK tactics:
+MITRE ATT&CK was used as a **behavioral reference framework**, not as confirmation of malicious intent.
 
-- **Initial Access** – Authentication anomalies  
-- **Execution** – PowerShell execution via management tooling  
 
-Frameworks were used to guide analysis, not to force classification.
-
----
-
-## ✅ Key Takeaway
-
-This project demonstrates real-world SOC Tier 2 investigation skills, including alert triage, cloud-aware analysis, disciplined investigation methodology, and the ability to correctly distinguish between malicious activity and legitimate administrative operations.
